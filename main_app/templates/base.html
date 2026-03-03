@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Platinum Pit{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'main_app/css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'main_app/css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'main_app/css/dashboard.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">🔧</div>
+    <div class="sidebar-logo-text">
+      <strong>Platinum Pit</strong>
+      <span>{% if user.profile.is_staff_member %}{{ user.profile.get_role_display }}{% else %}Customer Portal{% endif %}</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <span class="nav-icon">⊞</span> Dashboard
+    </a>
+
+    {% if user.profile.is_staff_member %}
+    <a href="{% url 'customer_list' %}" class="{% if 'customer' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="nav-icon">👥</span> Customers
+    </a>
+    {% endif %}
+
+    <a href="{% url 'appointment_list' %}" class="{% if 'appointment' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="nav-icon">📅</span> Appointments
+    </a>
+
+    {% if not user.profile.is_staff_member %}
+    <a href="{% url 'vehicle_list' %}" class="{% if 'vehicle' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="nav-icon">🚗</span> My Vehicles
+    </a>
+    {% endif %}
+
+    <a href="{% url 'service_history' %}" class="{% if request.resolver_match.url_name == 'service_history' %}active{% endif %}">
+      <span class="nav-icon">📋</span> Service History
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+      <div class="user-info">
+        <strong>{{ user.get_full_name|default:user.username }}</strong>
+        <span>{{ user.profile.get_role_display }}</span>
+      </div>
+    </div>
+    <nav class="sidebar-nav" style="padding:8px 0 0;">
+      <a href="{% url 'profile' %}">⚙️ Settings</a>
+      <a href="{% url 'logout' %}" class="logout">🚪 Logout</a>
+    </nav>
+  </div>
+</aside>
+{% endif %}
+
+<main class="main" {% if not user.is_authenticated %}style="margin-left:0;display:flex;align-items:center;justify-content:center;"{% endif %}>
+  {% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+    <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>
