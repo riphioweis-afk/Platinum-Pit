@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Register — Platinum Pit{% endblock %}
+
+{% block content %}
+<div style="width:100%;max-width:480px;">
+  <div style="text-align:center;margin-bottom:28px;">
+    <div style="font-size:36px;margin-bottom:10px;">🔧</div>
+    <h1 style="font-size:22px;font-weight:700;">
+      {% if role == 'staff' %}Staff Registration{% else %}Create Account{% endif %}
+    </h1>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:6px;">
+      {% if role == 'staff' %}Register as a service advisor or dealership owner{% else %}Sign up as a customer{% endif %}
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+          <p style="color:var(--red);font-size:12px;margin-top:4px;">{{ field.errors.0 }}</p>
+          {% endif %}
+          {% if field.help_text %}
+          <p style="color:var(--text-muted);font-size:11px;margin-top:3px;">{{ field.help_text }}</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:11px;margin-top:4px;">
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <p style="text-align:center;font-size:13px;margin-top:16px;color:var(--text-muted);">
+    Already have an account?
+    <a href="{% url 'login' %}" style="color:var(--primary);font-weight:600;">Sign in</a>
+  </p>
+</div>
+{% endblock %}

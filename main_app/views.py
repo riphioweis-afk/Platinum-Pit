@@ -11,6 +11,14 @@ from .forms import VehicleForm, AppointmentForm, AppointmentAssignForm, ServiceR
 import datetime
 
 
+
+def get_profile(user):
+    """Safely get or create a profile for any user."""
+    from .models import UserProfile
+    profile, _ = UserProfile.objects.get_or_create(user=user, defaults={'role': 'customer'})
+    return profile
+
+
 def staff_required(view_func):
     """Decorator: only advisors and owners can access."""
     def wrapper(request, *args, **kwargs):
@@ -38,7 +46,7 @@ def owner_required(view_func):
 @login_required
 def dashboard(request):
     today = timezone.now().date()
-    profile = request.user.profile if hasattr(request.user, 'profile') else None
+    profile = get_profile(request.user)
 
     if profile and profile.is_staff_member():
         # Staff dashboard
@@ -110,7 +118,7 @@ def dashboard(request):
 
 @login_required
 def vehicle_list(request):
-    if request.user.profile.is_staff_member():
+    if get_profile(request.user).is_staff_member():
         vehicles = Vehicle.objects.all().select_related('owner')
     else:
         vehicles = Vehicle.objects.filter(owner=request.user)
@@ -132,7 +140,7 @@ def vehicle_create(request):
 @login_required
 def vehicle_edit(request, pk):
     vehicle = get_object_or_404(Vehicle, pk=pk)
-    if not request.user.profile.is_staff_member() and vehicle.owner != request.user:
+    if not get_profile(request.user).is_staff_member() and vehicle.owner != request.user:
         messages.error(request, 'You can only edit your own vehicles.')
         return redirect('vehicle_list')
     form = VehicleForm(request.POST or None, instance=vehicle)
@@ -146,7 +154,7 @@ def vehicle_edit(request, pk):
 @login_required
 def vehicle_delete(request, pk):
     vehicle = get_object_or_404(Vehicle, pk=pk)
-    if not request.user.profile.is_staff_member() and vehicle.owner != request.user:
+    if not get_profile(request.user).is_staff_member() and vehicle.owner != request.user:
         messages.error(request, 'You can only delete your own vehicles.')
         return redirect('vehicle_list')
     if request.method == 'POST':
@@ -160,7 +168,7 @@ def vehicle_delete(request, pk):
 
 @login_required
 def appointment_list(request):
-    if request.user.profile.is_staff_member():
+    if get_profile(request.user).is_staff_member():
         appointments = Appointment.objects.all().select_related('customer', 'vehicle', 'advisor')
     else:
         appointments = Appointment.objects.filter(customer=request.user).select_related('vehicle', 'advisor')
@@ -193,7 +201,7 @@ def appointment_create(request):
 def appointment_detail(request, pk):
     appt = get_object_or_404(Appointment, pk=pk)
     can_edit = (
-        request.user.profile.is_staff_member() or
+        get_profile(request.user).is_staff_member() or
         appt.customer == request.user
     )
     return render(request, 'appointment_detail.html', {'appt': appt, 'can_edit': can_edit})
@@ -276,7 +284,7 @@ def customer_detail(request, pk):
 
 @login_required
 def service_history(request):
-    if request.user.profile.is_staff_member():
+    if get_profile(request.user).is_staff_member():
         records = ServiceRecord.objects.all().select_related('vehicle', 'customer', 'advisor')
     else:
         records = ServiceRecord.objects.filter(customer=request.user).select_related('vehicle', 'advisor')
@@ -325,7 +333,7 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    profile = request.user.profile
+    profile = get_profile(request.user)
     form = ProfileUpdateForm(request.POST or None, instance=profile)
     if request.method == 'POST' and form.is_valid():
         obj = form.save(commit=False)

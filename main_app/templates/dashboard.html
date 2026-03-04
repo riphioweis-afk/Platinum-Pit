@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Platinum Pit{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <p>Welcome back, {{ user.first_name }}! Here's your overview for today.</p>
+</div>
+
+{% if is_staff %}
+<!-- ===== STAFF DASHBOARD ===== -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue">📅</div>
+    <div class="stat-value">{{ today_appointments.count }}</div>
+    <div class="stat-label">Today's Appointments</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">👥</div>
+    <div class="stat-value">{{ total_customers }}</div>
+    <div class="stat-label">Total Customers</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple">🔧</div>
+    <div class="stat-value">{{ services_completed }}</div>
+    <div class="stat-label">Services Completed</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon orange">💲</div>
+    <div class="stat-value">${{ month_revenue|floatformat:2 }}</div>
+    <div class="stat-label">
+      {% now "M" %} Revenue
+    </div>
+  </div>
+</div>
+
+<div class="two-col-60-40">
+  <!-- Today's Appointments -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Today's Appointments</h2>
+      <a href="{% url 'appointment_list' %}" class="btn btn-secondary btn-sm">View All</a>
+    </div>
+    <div class="card-body">
+      {% if today_appointments %}
+        {% for appt in today_appointments %}
+        <div class="appt-item">
+          <div>
+            <div class="appt-name">{{ appt.customer.get_full_name }}</div>
+            <div class="appt-vehicle">{{ appt.vehicle }}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="text-align:right;">
+              <div class="appt-time">{{ appt.time|time:"g:i A" }}</div>
+              <div class="appt-service">{{ appt.get_service_type_display }}</div>
+            </div>
+            <span class="badge badge-{{ appt.status|slugify }}">{{ appt.get_status_display }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">📅</div>
+          <p>No appointments scheduled for today.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Maintenance Alerts -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Maintenance Alerts</h2>
+    </div>
+    <div class="card-body">
+      {% if maintenance_alerts %}
+        {% for alert in maintenance_alerts %}
+        <div class="alert-item">
+          <div class="alert-item-header">
+            <span>⚠️</span>
+            {{ alert.vehicle.owner.get_full_name }}
+          </div>
+          <div class="alert-item-sub">{{ alert.vehicle }}</div>
+          <div class="alert-item-msg">
+            {% if alert.mileage_threshold %}{{ alert.mileage_threshold|floatformat:0 }} miles — {% endif %}
+            {{ alert.message }}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">✅</div>
+          <p>No active maintenance alerts.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Upcoming Appointments Table -->
+<div class="card">
+  <div class="card-header">
+    <h2>Upcoming Appointments</h2>
+    <a href="{% url 'appointment_create' %}" class="btn btn-primary btn-sm">+ New</a>
+  </div>
+  <div class="table-wrap">
+    {% if upcoming_appointments %}
+    <table>
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Vehicle</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Service</th>
+          <th>Advisor</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appt in upcoming_appointments %}
+        <tr>
+          <td><strong>{{ appt.customer.get_full_name }}</strong></td>
+          <td>{{ appt.vehicle }}</td>
+          <td>{{ appt.date }}</td>
+          <td>{{ appt.time|time:"g:i A" }}</td>
+          <td>{{ appt.get_service_type_display }}</td>
+          <td>{{ appt.advisor.get_full_name|default:"Unassigned" }}</td>
+          <td><span class="badge badge-{{ appt.status|slugify }}">{{ appt.get_status_display }}</span></td>
+          <td>
+            <a href="{% url 'appointment_assign' appt.pk %}" class="btn btn-secondary btn-sm">Manage</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" style="padding:30px;">
+      <p>No upcoming appointments.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% else %}
+<!-- ===== CUSTOMER DASHBOARD ===== -->
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+  <div class="stat-card">
+    <div class="stat-icon blue">🚗</div>
+    <div class="stat-value">{{ my_vehicles.count }}</div>
+    <div class="stat-label">My Vehicles</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green">📅</div>
+    <div class="stat-value">{{ my_appointments.count }}</div>
+    <div class="stat-label">Upcoming Appointments</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon purple">📋</div>
+    <div class="stat-value">{{ my_service_history.count }}</div>
+    <div class="stat-label">Recent Services</div>
+  </div>
+</div>
+
+<div class="two-col">
+  <!-- My Upcoming Appointments -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Upcoming Appointments</h2>
+      <a href="{% url 'appointment_create' %}" class="btn btn-primary btn-sm">+ Book</a>
+    </div>
+    <div class="card-body">
+      {% if my_appointments %}
+        {% for appt in my_appointments %}
+        <div class="appt-item">
+          <div>
+            <div class="appt-name">{{ appt.get_service_type_display }}</div>
+            <div class="appt-vehicle">{{ appt.vehicle }}</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="appt-time">{{ appt.date }}</div>
+            <span class="badge badge-{{ appt.status|slugify }}" style="margin-top:4px;">{{ appt.get_status_display }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">📅</div>
+          <p>No upcoming appointments.</p>
+          <a href="{% url 'appointment_create' %}" class="btn btn-primary" style="margin-top:12px;">Book Now</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Maintenance Alerts -->
+  <div class="card">
+    <div class="card-header">
+      <h2>Maintenance Alerts</h2>
+    </div>
+    <div class="card-body">
+      {% if my_alerts %}
+        {% for alert in my_alerts %}
+        <div class="alert-item">
+          <div class="alert-item-header">⚠️ {{ alert.vehicle }}</div>
+          <div class="alert-item-msg">{{ alert.message }}</div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">✅</div>
+          <p>No alerts. Your vehicles are all good!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- My Vehicles -->
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header">
+    <h2>My Vehicles</h2>
+    <a href="{% url 'vehicle_create' %}" class="btn btn-primary btn-sm">+ Add Vehicle</a>
+  </div>
+  <div class="table-wrap">
+    {% if my_vehicles %}
+    <table>
+      <thead>
+        <tr><th>Vehicle</th><th>Year</th><th>Mileage</th><th>VIN</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for v in my_vehicles %}
+        <tr>
+          <td><strong>{{ v.make }} {{ v.model }}</strong></td>
+          <td>{{ v.year }}</td>
+          <td>{{ v.current_mileage|floatformat:0 }} mi</td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ v.vin|default:"—" }}</td>
+          <td>
+            <a href="{% url 'vehicle_edit' v.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" style="padding:30px;">
+      <p>No vehicles added yet.</p>
+      <a href="{% url 'vehicle_create' %}" class="btn btn-primary" style="margin-top:12px;">Add Your First Vehicle</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}

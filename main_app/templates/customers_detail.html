@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}{{ customer.get_full_name }} — Platinum Pit{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <h1>{{ customer.get_full_name }}</h1>
+    <p>{{ customer.email }} {% if customer.profile.phone %}· {{ customer.profile.phone }}{% endif %}</p>
+  </div>
+  <a href="{% url 'customer_list' %}" class="btn btn-secondary">← Back</a>
+</div>
+
+<div class="two-col" style="margin-bottom:20px;">
+  <!-- Vehicles -->
+  <div class="card">
+    <div class="card-header"><h2>Vehicles ({{ vehicles.count }})</h2></div>
+    <div class="table-wrap">
+      {% if vehicles %}
+      <table>
+        <thead><tr><th>Vehicle</th><th>Year</th><th>Mileage</th></tr></thead>
+        <tbody>
+          {% for v in vehicles %}
+          <tr>
+            <td><strong>{{ v.make }} {{ v.model }}</strong></td>
+            <td>{{ v.year }}</td>
+            <td>{{ v.current_mileage|floatformat:0 }} mi</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state" style="padding:20px;"><p>No vehicles.</p></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Recent Appointments -->
+  <div class="card">
+    <div class="card-header"><h2>Appointments</h2></div>
+    <div class="table-wrap">
+      {% if appointments %}
+      <table>
+        <thead><tr><th>Service</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for a in appointments %}
+          <tr>
+            <td>{{ a.get_service_type_display }}</td>
+            <td>{{ a.date }}</td>
+            <td><span class="badge badge-{{ a.status|slugify }}">{{ a.get_status_display }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state" style="padding:20px;"><p>No appointments.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Service History -->
+<div class="card">
+  <div class="card-header"><h2>Service History</h2></div>
+  <div class="table-wrap">
+    {% if service_records %}
+    <table>
+      <thead><tr><th>Service</th><th>Vehicle</th><th>Date</th><th>Mileage</th><th>Cost</th><th>Advisor</th></tr></thead>
+      <tbody>
+        {% for r in service_records %}
+        <tr>
+          <td><strong>{{ r.service_type }}</strong></td>
+          <td>{{ r.vehicle }}</td>
+          <td>{{ r.completed_at|date:"M d, Y" }}</td>
+          <td>{{ r.mileage_at_service|floatformat:0 }} mi</td>
+          <td>${{ r.cost }}</td>
+          <td>{{ r.advisor.get_full_name|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" style="padding:20px;"><p>No service records.</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

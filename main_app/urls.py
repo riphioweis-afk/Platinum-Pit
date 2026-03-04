@@ -1,6 +1,5 @@
 from django.urls import path
-from . import views # Import views to connect routes to view functions
-
+from . import views
 
 urlpatterns = [
     # Auth
@@ -8,7 +7,6 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('register/', views.register_customer, name='register_customer'),
     path('register/staff/', views.register_staff, name='register_staff'),
-    path('profile/', views.profile_view, name='profile'),
 
     # Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
@@ -30,6 +28,4 @@ urlpatterns = [
     path('customers/', views.customer_list, name='customer_list'),
     path('customers/<int:pk>/', views.customer_detail, name='customer_detail'),
 
-    # Service History
-    path('service-history/', views.service_history, name='service_history'),
 ]

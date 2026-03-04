@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Service History — Platinum Pit{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Service History</h1>
+  <p>Complete record of all services performed</p>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    {% if records %}
+    <table>
+      <thead>
+        <tr>
+          {% if user.profile.is_staff_member %}<th>Customer</th>{% endif %}
+          <th>Vehicle</th><th>Service</th><th>Date</th><th>Mileage</th><th>Cost</th><th>Advisor</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          {% if user.profile.is_staff_member %}<td>{{ r.customer.get_full_name }}</td>{% endif %}
+          <td>{{ r.vehicle }}</td>
+          <td><strong>{{ r.service_type }}</strong></td>
+          <td>{{ r.completed_at|date:"M d, Y" }}</td>
+          <td>{{ r.mileage_at_service|floatformat:0 }} mi</td>
+          <td>${{ r.cost }}</td>
+          <td>{{ r.advisor.get_full_name|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" style="padding:40px;">
+      <div class="empty-icon">📋</div>
+      <p>No service records yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

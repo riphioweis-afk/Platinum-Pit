@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Vehicles — Platinum Pit{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+  <div><h1>My Vehicles</h1><p>Manage your registered vehicles</p></div>
+  <a href="{% url 'vehicle_create' %}" class="btn btn-primary">+ Add Vehicle</a>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    {% if vehicles %}
+    <table>
+      <thead>
+        <tr>
+          {% if user.profile.is_staff_member %}<th>Owner</th>{% endif %}
+          <th>Vehicle</th><th>Year</th><th>Color</th><th>Mileage</th><th>VIN</th><th>License</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in vehicles %}
+        <tr>
+          {% if user.profile.is_staff_member %}<td>{{ v.owner.get_full_name }}</td>{% endif %}
+          <td><strong>{{ v.make }} {{ v.model }}</strong></td>
+          <td>{{ v.year }}</td>
+          <td>{{ v.color|default:"—" }}</td>
+          <td>{{ v.current_mileage|floatformat:0 }} mi</td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px;">{{ v.vin|default:"—" }}</td>
+          <td>{{ v.license_plate|default:"—" }}</td>
+          <td style="display:flex;gap:6px;">
+            <a href="{% url 'vehicle_edit' v.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+            <a href="{% url 'vehicle_delete' v.pk %}" class="btn btn-danger btn-sm">Delete</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" style="padding:40px;">
+      <div class="empty-icon">🚗</div>
+      <p>No vehicles registered yet.</p>
+      <a href="{% url 'vehicle_create' %}" class="btn btn-primary" style="margin-top:12px;">Add Your First Vehicle</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -45,9 +45,6 @@
     </a>
     {% endif %}
 
-    <a href="{% url 'service_history' %}" class="{% if request.resolver_match.url_name == 'service_history' %}active{% endif %}">
-      <span class="nav-icon">📋</span> Service History
-    </a>
   </nav>
 
   <div class="sidebar-footer">
@@ -59,7 +56,6 @@
       </div>
     </div>
     <nav class="sidebar-nav" style="padding:8px 0 0;">
-      <a href="{% url 'profile' %}">⚙️ Settings</a>
       <a href="{% url 'logout' %}" class="logout">🚪 Logout</a>
     </nav>
   </div>

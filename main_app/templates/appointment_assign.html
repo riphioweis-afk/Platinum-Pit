@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Manage Appointment — Platinum Pit{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Manage Appointment</h1>
+  <p>{{ appt.customer.get_full_name }} — {{ appt.vehicle }} — {{ appt.get_service_type_display }}</p>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+  <div class="card form-page" style="max-width:100%;">
+    <div class="card-header"><h2>Update Appointment</h2></div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+          <label>{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}<p style="color:var(--red);font-size:12px;margin-top:4px;">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+        {% endfor %}
+        <div style="display:flex;gap:10px;">
+          <button type="submit" class="btn btn-primary">Update</button>
+          <a href="{% url 'appointment_list' %}" class="btn btn-secondary">Back</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:100%;height:fit-content;">
+    <div class="card-header"><h2>Appointment Details</h2></div>
+    <div class="card-body">
+      <table style="width:100%;">
+        <tr><td style="color:var(--text-muted);font-size:13px;padding:6px 0;">Customer</td><td style="font-weight:600;">{{ appt.customer.get_full_name }}</td></tr>
+        <tr><td style="color:var(--text-muted);font-size:13px;padding:6px 0;">Vehicle</td><td>{{ appt.vehicle }}</td></tr>
+        <tr><td style="color:var(--text-muted);font-size:13px;padding:6px 0;">Service</td><td>{{ appt.get_service_type_display }}</td></tr>
+        <tr><td style="color:var(--text-muted);font-size:13px;padding:6px 0;">Date & Time</td><td>{{ appt.date }} at {{ appt.time|time:"g:i A" }}</td></tr>
+        <tr><td style="color:var(--text-muted);font-size:13px;padding:6px 0;">Status</td><td><span class="badge badge-{{ appt.status|slugify }}">{{ appt.get_status_display }}</span></td></tr>
+        {% if appt.notes %}<tr><td style="color:var(--text-muted);font-size:13px;padding:6px 0;">Notes</td><td>{{ appt.notes }}</td></tr>{% endif %}
+      </table>
+      {% if appt.status == 'in_progress' %}
+      <div style="margin-top:16px;">
+        <a href="{% url 'appointment_complete' appt.pk %}" class="btn btn-success" style="width:100%;justify-content:center;">
+          ✅ Mark as Completed
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

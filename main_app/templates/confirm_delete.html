@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Confirm Delete — Platinum Pit{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;margin:60px auto;">
+  <div class="card">
+    <div class="card-body" style="text-align:center;padding:40px;">
+      <div style="font-size:40px;margin-bottom:16px;">⚠️</div>
+      <h2 style="margin-bottom:8px;">Are you sure?</h2>
+      <p style="color:var(--text-muted);margin-bottom:24px;">
+        You're about to delete <strong>{{ object }}</strong>. This action cannot be undone.
+      </p>
+      <form method="post" style="display:flex;gap:10px;justify-content:center;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'vehicle_list' %}" class="btn btn-secondary">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

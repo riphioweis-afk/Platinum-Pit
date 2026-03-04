@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Appointment — Platinum Pit{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <h1>Appointment Details</h1>
+    <p>{{ appt.get_service_type_display }} — {{ appt.date }}</p>
+  </div>
+  <a href="{% url 'appointment_list' %}" class="btn btn-secondary">← Back</a>
+</div>
+
+<div class="card form-page" style="max-width:600px;">
+  <div class="card-body">
+    <table style="width:100%;">
+      <tr><td style="color:var(--text-muted);font-size:13px;padding:8px 0;width:140px;">Customer</td><td style="font-weight:600;">{{ appt.customer.get_full_name }}</td></tr>
+      <tr><td style="color:var(--text-muted);font-size:13px;padding:8px 0;">Vehicle</td><td>{{ appt.vehicle }}</td></tr>
+      <tr><td style="color:var(--text-muted);font-size:13px;padding:8px 0;">Service</td><td>{{ appt.get_service_type_display }}</td></tr>
+      <tr><td style="color:var(--text-muted);font-size:13px;padding:8px 0;">Date & Time</td><td>{{ appt.date }} at {{ appt.time|time:"g:i A" }}</td></tr>
+      <tr><td style="color:var(--text-muted);font-size:13px;padding:8px 0;">Advisor</td><td>{{ appt.advisor.get_full_name|default:"Not yet assigned" }}</td></tr>
+      <tr><td style="color:var(--text-muted);font-size:13px;padding:8px 0;">Status</td><td><span class="badge badge-{{ appt.status|slugify }}">{{ appt.get_status_display }}</span></td></tr>
+      {% if appt.estimated_cost %}<tr><td style="color:var(--text-muted);font-size:13px;padding:8px 0;">Est. Cost</td><td>${{ appt.estimated_cost }}</td></tr>{% endif %}
+      {% if appt.actual_cost %}<tr><td style="color:var(--text-muted);font-size:13px;padding:8px 0;">Actual Cost</td><td><strong>${{ appt.actual_cost }}</strong></td></tr>{% endif %}
+      {% if appt.notes %}<tr><td style="color:var(--text-muted);font-size:13px;padding:8px 0;vertical-align:top;">Notes</td><td>{{ appt.notes }}</td></tr>{% endif %}
+    </table>
+
+    {% if can_edit and user.profile.is_staff_member %}
+    <div style="margin-top:20px;display:flex;gap:10px;">
+      <a href="{% url 'appointment_assign' appt.pk %}" class="btn btn-primary">Manage</a>
+      {% if appt.status == 'in_progress' %}
+      <a href="{% url 'appointment_complete' appt.pk %}" class="btn btn-success">Complete Service</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
